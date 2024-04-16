@@ -197,7 +197,7 @@ func simulate(simParams: SimParams) -> Float {
     var quanta = simParams.quanta
 
     slab.temp = simParams.startingTemp
-    for i in 1 ... 20 {
+    for _ in 1 ..< 21 {
         let tankAndQuanta = updateSourceTank(store: tank, quanta: quanta)
         tank = tankAndQuanta.tank
         quanta = tankAndQuanta.quanta
@@ -251,6 +251,7 @@ for _ in 0 ..< trials {
     let gradientTime = measure {
         grad = gradient(at: simParams, of: fullPipe)
     }
+    _ = grad
 
     totalPureForwardTime += forwardOnly
     totalGradientTime += gradientTime

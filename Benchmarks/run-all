@@ -1,7 +1,7 @@
 #! /bin/bash
 
 # Install the pytorch environment (if needed) and run benchmark
-echo "Running PyTorch benchmark ..."
+echo -n "Running PyTorch benchmark ..."
 if [ -f pytorch-cpu/bin/activate ]; then
     source pytorch-cpu/bin/activate
 else
@@ -10,50 +10,57 @@ else
     pip install torch torchvision
 fi
 cd ./BuildingSimulation/PyTorch/
-python3 PyTorchSimulator.py 2>&1 |tee ../../pytorch.txt
-cd -
+python3 PyTorchSimulator.py >../../pytorch.txt 2>&1
+cd - >/dev/null
 deactivate
-echo "--------------------------------------------------------------------------------"
+echo " done"
 
 # Install the tensorflow environment (if needed) and run benchmark
-echo "Running TensorFlow benchmark ..."
+echo -n "Running TensorFlow benchmark ..."
 if [ -f tensorflow-cpu/bin/activate ]; then
     source tensorflow-cpu/bin/activate
 else
     python3 -m venv tensorflow-cpu
     source tensorflow-cpu/bin/activate
+    python3 -m pip install wheel
     pip install tensorflow
 fi
 cd ./BuildingSimulation/TensorFlow/
-python3 TensorFlowSimulator.py 2>&1 |tee ../../tensorflow.txt
-cd -
+python3 TensorFlowSimulator.py >../../tensorflow.txt 2>&1
+cd - >/dev/null
 deactivate
-echo "--------------------------------------------------------------------------------"
+echo " done"
 
 # Compile and run Swift benchmark
-echo "Running Swift benchmark ..."
-
 if [[ "$OSTYPE" == "darwin"* ]]; then
     SWIFT=/Library/Developer/Toolchains/swift-DEVELOPMENT-SNAPSHOT-2023-12-07-a.xctoolchain/usr/bin/swift
 else
-    SWIFT=swift
+    SWIFT=/usr/bin/swift
 fi
 
 if [ ! -x $SWIFT ]; then
     echo "Missing $SWIFT"
 else
+    echo -n "Running Swift benchmark ..."
     cd ./BuildingSimulation/Swift
-    $SWIFT run -c release 2>&1 |tee ../../swift.txt
-    cd -
+    $SWIFT run -c release >../../swift.txt 2>&1
+    cd - >/dev/null
+    echo " done"
 fi
-echo "--------------------------------------------------------------------------------"
 
-echo -n "PyTorch "
-grep gradient pytorch.txt | cut -d' ' -f8
+p=$(printf "%.12f" $(grep gradient pytorch.txt | cut -d' ' -f8))
+t=$(printf "%.12f" $(grep gradient tensorflow.txt | cut -d' ' -f8))
+s=$(printf "%.12f" $(grep gradient swift.txt | cut -d' ' -f7))
 
-echo -n "TensorFlow "
-grep gradient tensorflow.txt | cut -d' ' -f8
+echo -n "PyTorch"
+echo -n " "$p
+printf " [%.3f]\n" $(echo "$p/$s" | bc -l)
 
-echo -n "Swift "
-grep gradient swift.txt | cut -d' ' -f7
+echo -n "TensorFlow"
+echo -n " "$t
+printf " [%.3f]\n" $(echo "$t/$s" | bc -l)
+
+echo -n "Swift"
+echo -n " "$s
+printf " [%.3f]\n" $(echo "$s/$s" | bc -l)
 
