@@ -8,3 +8,6 @@ DerivedData
 .swiftpm/
 .build/
 .swift-version
+Benchmarks/pytorch-cpu
+Benchmarks/tensorflow-cpu
+Benchmarks/*.txt
