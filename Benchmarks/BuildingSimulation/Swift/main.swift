@@ -4,6 +4,9 @@ import Foundation
 // Definitions
 
 let dTime: Float = 0.1
+let trials = 30
+let warmup = 3
+
 let π = Float.pi
 
 struct SimParams: Differentiable {
@@ -235,12 +238,10 @@ func fullPipe(simParams: SimParams) -> Float {
     return loss
 }
 
-var learningRate: Float = 0.1
-var trials = 30
 var totalPureForwardTime: Double = 0
 var totalGradientTime: Double = 0
 
-for _ in 0 ..< trials {
+for i in 0 ..< trials {
     let forwardOnly = measure {
         let output = fullPipe(simParams: simParams)
         dontLetTheCompilerOptimizeThisAway(output)
@@ -253,12 +254,14 @@ for _ in 0 ..< trials {
     }
     _ = grad
 
-    totalPureForwardTime += forwardOnly
-    totalGradientTime += gradientTime
+    if i > warmup {
+        totalPureForwardTime += forwardOnly
+        totalGradientTime += gradientTime
+    }
 }
 
-let averagePureForward = totalPureForwardTime / Double(trials)
-let averageGradient = totalGradientTime / Double(trials)
+let averagePureForward = totalPureForwardTime / Double(trials - warmup)
+let averageGradient = totalGradientTime / Double(trials - warmup)
 
 print("trials:", trials)
 print("average forward and back (gradient) time:", averageGradient)

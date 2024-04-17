@@ -1,15 +1,16 @@
 
 import tensorflow as tf
 
+# Definitions
+dTime = 0.1
+trials = 30
+warmup = 3
+
+π = 3.14159265359
+
 @tf.function
 def doMath(a):
     return a * 2
-
-# Definitions
-
-dTime = 0.1
-π = 3.14159265359
-
 
 # TubeType and other custom object holding primitives will be represented with a 1D Tensor,
 # and SimParams will compose them into a 2D tensor
@@ -220,13 +221,8 @@ def fullPipe(simParams):
     loss = lossCalc(pred, 27.344767)
     return loss
 
-learningRate = 0.1
-
 totalForwardTime = 0
 totalGradientTime = 0
-
-trials = 30
-warmup = 3
 
 for i in range(trials + warmup):
     
